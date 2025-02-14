@@ -5,7 +5,7 @@ import AIClassification from './AIClassification';
 import EmissionCalculation from './EmissionCalculation';
 import { motion } from 'framer-motion';
 
-const steps = ['Data Collection', 'AI Classification', 'Emission Calculation'];
+const steps = ['Data Collection', 'Classification', 'Emission Calculation'];
 
 const EmissionAnalytics = () => {
   const [activeStep, setActiveStep] = useState(0);
