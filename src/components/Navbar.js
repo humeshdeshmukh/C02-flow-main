@@ -59,7 +59,7 @@ function Navbar() {
               textDecoration: 'none',
             }}
           >
-            AquaVolt
+            CO2 Flow
           </Typography>
 
           <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>

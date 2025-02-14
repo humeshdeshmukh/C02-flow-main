@@ -80,7 +80,7 @@ const Home = () => {
                         fontWeight: 'bold',
                       }}
                     >
-                     AquaVolt
+                     CO2 Flow
                     </Typography>
                   </motion.div>
                   <GlowingFlower />

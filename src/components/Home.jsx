@@ -19,7 +19,7 @@ const Home = () => {
   }, []);
 
   if (isLoading) {
-    return <LoadingScreen text="Initializing Smart Energy Platform..." />;
+    return <LoadingScreen text="Initializing CO2 Flow Platform..." />;
   }
 
   return (
@@ -57,13 +57,13 @@ const Home = () => {
                     }}
                   >
                     <Typography variant="h3" component="h1" sx={{ color: '#FFB74D', mb: 3 }}>
-                    Aquavolt
+                    CO2 Flow
                     </Typography>
                     <Typography variant="h5" sx={{ color: '#FFD180', mb: 2 }}>
-                      Intelligent Energy Market Analysis
+                      Intelligent Carbon Market Analysis
                     </Typography>
                     <Typography variant="body1" sx={{ color: '#FFF', mb: 3 }}>
-                      Revolutionizing energy market analysis through biomimicry and swarm intelligence.
+                      Revolutionizing carbon market analysis through biomimicry and swarm intelligence.
                       Our system learns from nature's most efficient organizers - honeybees - to predict
                       and adapt to energy stock market patterns.
                     </Typography>
