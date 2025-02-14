@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Paper, Typography, Box, TextField, Slider, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 import GoalTracker from './GoalTracker';
-import HistoricalChart from './HistoricalChart';
+// import HistoricalChart from './HistoricalChart';
 import PeerComparison from './PeerComparison';
 import Leaderboard from '../Leaderboard/Leaderboard';
 
@@ -274,21 +274,8 @@ const ClimateImpactAnalysis = () => {
               </Paper>
             </Grid>
 
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
-                <HistoricalChart />
-              </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
-                <GoalTracker />
-              </Paper>
-            </Grid>
-            <Grid item xs={12}>
-              <Paper sx={{ p: 2 }}>
-                <PeerComparison />
-              </Paper>
-            </Grid>
+           
+          
           </Grid>
         </Grid>
         

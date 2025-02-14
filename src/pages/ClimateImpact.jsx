@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Paper, Typography, Box, Card, CardContent, TextField, Button, CircularProgress } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { Container, Grid, Paper, Typography, Box, Card, CardContent, Tabs, Tab } from '@mui/material';
 import { motion } from 'framer-motion';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import AcUnitIcon from '@mui/icons-material/AcUnit';
-import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import DeviceThermostatIcon from '@mui/icons-material/DeviceThermostat';
-import ElectricBoltIcon from '@mui/icons-material/ElectricBolt';
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
-import HomeIcon from '@mui/icons-material/Home';
+import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import { useCarbonContext } from '../context/CarbonContext';
 import PeerComparison from '../components/CarbonFootprint/PeerComparison';
 import HistoricalChart from '../components/CarbonFootprint/HistoricalChart';
 import GoalTracker from '../components/CarbonFootprint/GoalTracker';
 import LoadingScreen from '../components/LoadingScreen/LoadingScreen';
+import MicroInvestment from '../components/MicroInvestment/MicroInvestment';
 
 const ClimateImpact = () => {
   const { addFootprintData } = useCarbonContext();
+  const [loading, setLoading] = useState(true);
+  const [currentWeather, setCurrentWeather] = useState(null);
+  const [activeTab, setActiveTab] = useState(0);
+  const [carbonCredits, setCarbonCredits] = useState(1000); // Initial carbon credits
   const [formData, setFormData] = useState({
     electricityUsage: 0,
     carMileage: 0,
@@ -25,9 +24,7 @@ const ClimateImpact = () => {
   });
 
   const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [calculating, setCalculating] = useState(false);
-  const [currentWeather, setCurrentWeather] = useState(null);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -48,6 +45,16 @@ const ClimateImpact = () => {
 
     initializeData();
   }, []);
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  const handleInvestment = (investmentOption) => {
+    // Handle the investment by deducting credits
+    setCarbonCredits(prev => prev - investmentOption.cost);
+    // You can add more logic here like saving to backend, updating context, etc.
+  };
 
   const calculateWeatherImpact = () => {
     // Calculate impact based on temperature
@@ -158,62 +165,86 @@ const ClimateImpact = () => {
   };
 
   if (loading) {
-    return (
-      <LoadingScreen 
-        text="Analyzing Climate Data" 
-        subtext="Fetching weather information and calculating environmental impact..."
-        fullScreen={true}
-      />
-    );
-  }
-
-  if (calculating) {
-    return (
-      <LoadingScreen 
-        text="Calculating Carbon Footprint" 
-        subtext="Processing your data and generating personalized insights..."
-        fullScreen={false}
-      />
-    );
+    return <LoadingScreen />;
   }
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+      {/* Title Section */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Grid container spacing={3}>
-          {/* Header Section */}
-          <Grid item xs={12}>
-            <Paper
-              sx={{
-                p: 3,
-                background: 'rgba(26, 26, 26, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '10px',
-                border: '1px solid rgba(255, 183, 77, 0.2)',
-              }}
-            >
-              <Typography variant="h4" sx={{ color: '#FFB74D', mb: 2 }}>
-                Climate Impact Analysis
-              </Typography>
-              <Typography variant="subtitle1" sx={{ color: 'rgba(255, 183, 77, 0.8)' }}>
-                Real-time analysis of energy usage and environmental impact
-              </Typography>
-            </Paper>
-          </Grid>
+        <Paper
+          sx={{
+            p: 3,
+            mb: 3,
+            backdropFilter: 'blur(10px)',
+            backgroundColor: 'rgba(26, 26, 26, 0.95)',
+            border: '1px solid rgba(255, 183, 77, 0.2)',
+            borderRadius: '8px',
+            boxShadow: '0 4px 20px rgba(255, 183, 77, 0.2)',
+          }}
+        >
+          <Typography
+            variant="h3"
+            sx={{
+              color: '#FFB74D',
+              fontFamily: "'Orbitron', sans-serif",
+              textAlign: 'center',
+              textShadow: '0 0 10px rgba(255, 183, 77, 0.3)',
+            }}
+          >
+            Climate Impact & Green Investments
+          </Typography>
+        </Paper>
+      </motion.div>
 
+      {/* Tabs Section */}
+      <Paper
+        sx={{
+          mb: 3,
+          backdropFilter: 'blur(10px)',
+          backgroundColor: 'rgba(26, 26, 26, 0.95)',
+          border: '1px solid rgba(255, 183, 77, 0.2)',
+          borderRadius: '8px',
+        }}
+      >
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          centered
+          sx={{
+            '& .MuiTab-root': {
+              color: 'rgba(255, 183, 77, 0.7)',
+              '&.Mui-selected': {
+                color: '#FFB74D',
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#FFB74D',
+            },
+          }}
+        >
+          <Tab label="Climate Impact" />
+          <Tab label="Green Investments" />
+        </Tabs>
+      </Paper>
+
+      {/* Content Section */}
+      {activeTab === 0 ? (
+        // Climate Impact Content
+        <Grid container spacing={3}>
           {/* Calculator Form */}
           <Grid item xs={12} md={6}>
             <Paper
               sx={{
                 p: 3,
-                background: 'rgba(26, 26, 26, 0.95)',
                 backdropFilter: 'blur(10px)',
-                borderRadius: '10px',
+                backgroundColor: 'rgba(26, 26, 26, 0.95)',
                 border: '1px solid rgba(255, 183, 77, 0.2)',
+                borderRadius: '8px',
               }}
             >
               <Typography variant="h6" sx={{ color: '#FFB74D', mb: 3 }}>
@@ -321,16 +352,118 @@ const ClimateImpact = () => {
             </Paper>
           </Grid>
 
+          {/* Weather Impact Card */}
+          <Grid item xs={12} md={4}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Paper
+                sx={{
+                  p: 3,
+                  backdropFilter: 'blur(10px)',
+                  backgroundColor: 'rgba(26, 26, 26, 0.95)',
+                  border: '1px solid rgba(255, 183, 77, 0.2)',
+                  borderRadius: '8px',
+                }}
+              >
+                <Card sx={{ backgroundColor: 'transparent', boxShadow: 'none' }}>
+                  <CardContent>
+                    <Typography variant="h6" color="#FFB74D" gutterBottom>
+                      Current Weather Conditions
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <DeviceThermostatIcon sx={{ color: '#FFB74D', mr: 1 }} />
+                      <Typography color="white">
+                        Temperature: {currentWeather.temperature}°C
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <WaterDropIcon sx={{ color: '#FFB74D', mr: 1 }} />
+                      <Typography color="white">
+                        Humidity: {currentWeather.humidity}%
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Paper>
+            </motion.div>
+          </Grid>
+
+          {/* Historical Chart */}
+          <Grid item xs={12} md={8}>
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Paper
+                sx={{
+                  p: 3,
+                  backdropFilter: 'blur(10px)',
+                  backgroundColor: 'rgba(26, 26, 26, 0.95)',
+                  border: '1px solid rgba(255, 183, 77, 0.2)',
+                  borderRadius: '8px',
+                }}
+              >
+                <HistoricalChart />
+              </Paper>
+            </motion.div>
+          </Grid>
+
+          {/* Goal Tracker */}
+          <Grid item xs={12} md={6}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <Paper
+                sx={{
+                  p: 3,
+                  backdropFilter: 'blur(10px)',
+                  backgroundColor: 'rgba(26, 26, 26, 0.95)',
+                  border: '1px solid rgba(255, 183, 77, 0.2)',
+                  borderRadius: '8px',
+                }}
+              >
+                <GoalTracker />
+              </Paper>
+            </motion.div>
+          </Grid>
+
+          {/* Peer Comparison */}
+          <Grid item xs={12} md={6}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <Paper
+                sx={{
+                  p: 3,
+                  backdropFilter: 'blur(10px)',
+                  backgroundColor: 'rgba(26, 26, 26, 0.95)',
+                  border: '1px solid rgba(255, 183, 77, 0.2)',
+                  borderRadius: '8px',
+                }}
+              >
+                <PeerComparison />
+              </Paper>
+            </motion.div>
+          </Grid>
+
           {/* Results Section */}
           <Grid item xs={12} md={6}>
             {result ? (
               <Paper
                 sx={{
                   p: 3,
-                  background: 'rgba(26, 26, 26, 0.95)',
                   backdropFilter: 'blur(10px)',
-                  borderRadius: '10px',
+                  backgroundColor: 'rgba(26, 26, 26, 0.95)',
                   border: '1px solid rgba(255, 183, 77, 0.2)',
+                  borderRadius: '8px',
                 }}
               >
                 <Typography variant="h6" sx={{ color: '#FFB74D', mb: 2 }}>
@@ -382,62 +515,29 @@ const ClimateImpact = () => {
               </Paper>
             ) : null}
           </Grid>
-
-          {/* Historical Data */}
-          <Grid item xs={12}>
-            <Paper
-              sx={{
-                p: 3,
-                background: 'rgba(26, 26, 26, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '10px',
-                border: '1px solid rgba(255, 183, 77, 0.2)',
-              }}
-            >
-              <Typography variant="h6" sx={{ color: '#FFB74D', mb: 3 }}>
-                Historical Impact
-              </Typography>
-              <HistoricalChart />
-            </Paper>
-          </Grid>
-
-          {/* Peer Comparison */}
-          <Grid item xs={12} md={6}>
-            <Paper
-              sx={{
-                p: 3,
-                background: 'rgba(26, 26, 26, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '10px',
-                border: '1px solid rgba(255, 183, 77, 0.2)',
-              }}
-            >
-              <Typography variant="h6" sx={{ color: '#FFB74D', mb: 3 }}>
-                Peer Comparison
-              </Typography>
-              <PeerComparison data={result} />
-            </Paper>
-          </Grid>
-
-          {/* Goal Tracker */}
-          <Grid item xs={12} md={6}>
-            <Paper
-              sx={{
-                p: 3,
-                background: 'rgba(26, 26, 26, 0.95)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: '10px',
-                border: '1px solid rgba(255, 183, 77, 0.2)',
-              }}
-            >
-              <Typography variant="h6" sx={{ color: '#FFB74D', mb: 3 }}>
-                Goal Tracker
-              </Typography>
-              <GoalTracker data={result} />
-            </Paper>
-          </Grid>
         </Grid>
-      </motion.div>
+      ) : (
+        // Green Investments Content
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Paper
+            sx={{
+              backdropFilter: 'blur(10px)',
+              backgroundColor: 'rgba(26, 26, 26, 0.95)',
+              border: '1px solid rgba(255, 183, 77, 0.2)',
+              borderRadius: '8px',
+            }}
+          >
+            <MicroInvestment 
+              carbonCredits={carbonCredits}
+              onInvest={handleInvestment}
+            />
+          </Paper>
+        </motion.div>
+      )}
     </Container>
   );
 };

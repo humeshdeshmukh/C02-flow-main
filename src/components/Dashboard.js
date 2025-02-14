@@ -9,7 +9,6 @@ import { swarmApi } from '../services/apiService';
 import { useSwarm } from '../context/SwarmContext';
 import LoadingScreen from './LoadingScreen/LoadingScreen';
 import DynamicLoadBalancing from './DynamicLoadBalancing/DynamicLoadBalancing';
-import DashboardBeeInfo from './DashboardBeeInfo';
 import EnergyConsumptionOverview from './EnergyConsumptionOverview/EnergyConsumptionOverview';
 import EnergyPredictions from './EnergyPredictions/EnergyPredictions';
 import geminiService from '../services/geminiService';
@@ -417,8 +416,8 @@ function Dashboard() {
                 <Typography variant="h4" sx={{ color: '#FFB74D', mb: 2 }}>
                   {/* Smart Grid Management Dashboard */}
                 </Typography>
-                <DashboardBeeInfo />
-              </Paper>
+              
+              </Paper>  
             </Grid>
 
             {/* Main Content Area */}
