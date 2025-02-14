@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -8,9 +8,6 @@ import {
   CircularProgress,
   Tabs,
   Tab,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   List,
   ListItem,
   ListItemIcon,
@@ -25,14 +22,10 @@ import {
   Alert
 } from '@mui/material';
 import {
-  ExpandMore as ExpandMoreIcon,
-  TrendingUp,
-  EmojiObjects,
   Timeline,
+  EmojiObjects,
   SaveAlt,
   Nature,
-  AttachMoney,
-  Speed,
   Assessment,
   LocalShipping,
   Gavel,
@@ -56,6 +49,13 @@ import {
   generateComplianceReport,
 } from '../../services/aiService';
 import { generateComprehensiveReport } from './ReportGenerator';
+
+// Constants for emission factors
+const EMISSION_FACTORS = {
+  FUEL: 2.68,
+  ELECTRICITY: 0.4,
+  TRAVEL: 0.14
+};
 
 const EmissionCalculation = ({ data, onBack }) => {
   const [calculatedData, setCalculatedData] = useState(null);
@@ -88,54 +88,58 @@ const EmissionCalculation = ({ data, onBack }) => {
     }));
   };
 
-  useEffect(() => {
-    const calculateEmissions = () => {
-      try {
-        const calculated = {
-          scope1: {
-            fuelConsumption: {
-              value: data.scope1.fuelConsumption.value * 2.68,
-              unit: 'kg CO2e',
-            },
+  // Memoize emission calculations
+  const calculateEmissions = useMemo(() => {
+    try {
+      const calculated = {
+        scope1: {
+          fuelConsumption: {
+            value: data.scope1.fuelConsumption.value * EMISSION_FACTORS.FUEL,
+            unit: 'kg CO2e',
           },
-          scope2: {
-            electricityUsage: {
-              value: data.scope2.electricityUsage.value * 0.4,
-              unit: 'kg CO2e',
-            },
+        },
+        scope2: {
+          electricityUsage: {
+            value: data.scope2.electricityUsage.value * EMISSION_FACTORS.ELECTRICITY,
+            unit: 'kg CO2e',
           },
-          scope3: {
-            businessTravel: {
-              value: data.scope3.businessTravel.value * 0.14,
-              unit: 'kg CO2e',
-            },
+        },
+        scope3: {
+          businessTravel: {
+            value: data.scope3.businessTravel.value * EMISSION_FACTORS.TRAVEL,
+            unit: 'kg CO2e',
           },
-        };
+        },
+      };
 
-        const chartData = [
-          {
-            name: 'Scope 1',
-            emissions: calculated.scope1.fuelConsumption.value,
-          },
-          {
-            name: 'Scope 2',
-            emissions: calculated.scope2.electricityUsage.value,
-          },
-          {
-            name: 'Scope 3',
-            emissions: calculated.scope3.businessTravel.value,
-          },
-        ];
+      const chartData = [
+        {
+          name: 'Scope 1',
+          emissions: calculated.scope1.fuelConsumption.value,
+        },
+        {
+          name: 'Scope 2',
+          emissions: calculated.scope2.electricityUsage.value,
+        },
+        {
+          name: 'Scope 3',
+          emissions: calculated.scope3.businessTravel.value,
+        },
+      ];
 
-        setCalculatedData({ calculated, chartData });
-        setIsProcessing(false);
-      } catch (error) {
-        handleError('insights', error);
-      }
-    };
-
-    calculateEmissions();
+      return { calculated, chartData };
+    } catch (error) {
+      console.error('Calculation error:', error);
+      return null;
+    }
   }, [data]);
+
+  useEffect(() => {
+    if (calculateEmissions) {
+      setCalculatedData(calculateEmissions);
+      setIsProcessing(false);
+    }
+  }, [calculateEmissions]);
 
   useEffect(() => {
     if (calculatedData) {
@@ -192,16 +196,6 @@ const EmissionCalculation = ({ data, onBack }) => {
     }
   };
 
-  const renderError = (section) => {
-    if (!errors[section]) return null;
-    
-    return (
-      <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-        {errors[section]}
-      </Alert>
-    );
-  };
-
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
@@ -220,7 +214,6 @@ const EmissionCalculation = ({ data, onBack }) => {
       doc.save('CO2Flow-Comprehensive-Report.pdf');
     } catch (error) {
       console.error('Error generating report:', error);
-      // enqueueSnackbar('Error generating report. Please try again.', { variant: 'error' });
     } finally {
       setReportLoading(false);
     }
@@ -287,7 +280,11 @@ const EmissionCalculation = ({ data, onBack }) => {
 
   const renderSustainabilityReport = () => (
     <Box>
-      {renderError('sustainability')}
+      {errors.sustainability && (
+        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+          {errors.sustainability}
+        </Alert>
+      )}
       {loadingStates.sustainability ? (
         <CircularProgress />
       ) : sustainabilityReport ? (
@@ -350,7 +347,11 @@ const EmissionCalculation = ({ data, onBack }) => {
 
   const renderSupplyChainAnalysis = () => (
     <Box>
-      {renderError('supplyChain')}
+      {errors.supplyChain && (
+        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+          {errors.supplyChain}
+        </Alert>
+      )}
       {loadingStates.supplyChain ? (
         <CircularProgress />
       ) : supplyChainAnalysis ? (
@@ -409,7 +410,11 @@ const EmissionCalculation = ({ data, onBack }) => {
 
   const renderComplianceReport = () => (
     <Box>
-      {renderError('compliance')}
+      {errors.compliance && (
+        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+          {errors.compliance}
+        </Alert>
+      )}
       {loadingStates.compliance ? (
         <CircularProgress />
       ) : complianceReport ? (
