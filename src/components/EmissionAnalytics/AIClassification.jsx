@@ -18,7 +18,7 @@ const AIClassification = ({ data, onNext, onBack }) => {
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
-    // Simulate AI classification process
+   
     const timer = setTimeout(() => {
       const classified = {
         scope1: {

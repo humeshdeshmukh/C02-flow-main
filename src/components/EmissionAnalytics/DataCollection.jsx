@@ -42,10 +42,10 @@ const DataCollection = ({ onNext }) => {
   const handleSubmit = async () => {
     setIsProcessing(true);
     
-    // Simulate AI processing
+   
     setTimeout(() => {
       const processedData = activeTab === 0 ? manualData : {
-        // Simulated AI-extracted data
+        
         fuelConsumption: '1000',
         electricityUsage: '5000',
         businessTravel: '2000',
