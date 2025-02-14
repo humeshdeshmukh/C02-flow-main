@@ -18,6 +18,7 @@ import ClimateImpact from './pages/ClimateImpact';
 import MicroInvestments from './pages/MicroInvestments';
 import theme from './theme';
 import Chatbot from './components/Chatbot/Chatbot';
+import EmissionAnalytics from './components/EmissionAnalytics/EmissionAnalytics';
 
 function App() {
   return (
@@ -32,7 +33,7 @@ function App() {
                   display: 'flex', 
                   flexDirection: 'column', 
                   minHeight: '100vh',
-                  bgcolor: 'background.default'
+                  backgroundColor: '#1A1A1A',
                 }}>
                   <Navbar 
                     sx={{ 
@@ -61,6 +62,7 @@ function App() {
                       <Route path="/trading" element={<Trading />} />
                       <Route path="/climate-impact" element={<ClimateImpact />} />
                       <Route path="/micro-investments" element={<MicroInvestments />} />
+                      <Route path="/analytics" element={<EmissionAnalytics />} />
                     </Routes>
                   </Box>
                   <Chatbot />
