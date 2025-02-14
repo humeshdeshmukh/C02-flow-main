@@ -18,10 +18,10 @@ import TokenIcon from '@mui/icons-material/Token';
 const pages = [
   { name: 'Home', path: '/home' },
   { name: 'Analytics', path: '/analytics' },
-  { name: 'Dashboard', path: '/dashboard' },
+  // { name: 'Dashboard', path: '/dashboard' },
   { name: 'Trading', path: '/trading' },
-  { name: 'Climate Impact', path: '/climate-impact' },
-  { name: 'Green Investments', path: '/micro-investments' },
+  // { name: 'Climate Impact', path: '/climate-impact' },
+  // { name: 'Green Investments', path: '/micro-investments' },
 ];
 
 function Navbar() {
