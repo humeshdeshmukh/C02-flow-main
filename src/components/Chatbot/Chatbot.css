@@ -1,0 +1,52 @@
+.chatbot-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  height: 60px;
+}
+
+.chatbot-window {
+  position: absolute;
+  bottom: 100px;
+  right: 0;
+}
+
+.chat-toggle {
+  position: relative;
+  z-index: 1001;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #FFB74D 0%, #FF9800 100%);
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(255, 183, 77, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.chat-toggle:hover {
+  box-shadow: 0 6px 20px rgba(255, 183, 77, 0.4);
+}
+
+.messages-container {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 183, 77, 0.3) rgba(26, 26, 26, 0.95);
+}
+
+.messages-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.messages-container::-webkit-scrollbar-track {
+  background: rgba(26, 26, 26, 0.95);
+}
+
+.messages-container::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 183, 77, 0.3);
+  border-radius: 3px;
+}
+
+.messages-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 183, 77, 0.5);
+}
