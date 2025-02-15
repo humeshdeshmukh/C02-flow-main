@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Container, Grid, Paper, Typography, Box, CircularProgress, Chip } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import IndiaMap from './IndiaMap/IndiaMap';
-import HistoricalData from './HistoricalData/HistoricalData';
 import BeeTrail from './BeeTrail';
 import { soundManager } from './SoundEffects';
 import { swarmApi } from '../services/apiService';
@@ -10,6 +9,7 @@ import { useSwarm } from '../context/SwarmContext';
 import LoadingScreen from './LoadingScreen/LoadingScreen';
 import geminiService from '../services/geminiService';
 import PrecisionDecision from './EmissionAnalytics/PrecisionDecision';
+import ShegaonMap from './ShegaonMap';
 
 // State carbon footprint data
 const stateCarbonData = {
@@ -205,73 +205,75 @@ function Dashboard() {
                 </Paper>
               </Grid>
 
-              {/* Right Column - Carbon Footprint and Predictions */}
-              <Grid item xs={12} md={5} lg={4} container spacing={3}>
-                {/* Total Carbon Footprint */}
-                <Grid item xs={12}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      background: 'rgba(26, 26, 26, 0.95)',
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: '10px',
-                      border: '1px solid rgba(255, 183, 77, 0.2)',
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ color: '#FFD180', mb: 2 }}>
-                      Total Carbon Footprint {selectedState ? `- ${selectedState}` : ''}
-                    </Typography>
-                    <Box sx={{ mt: 2 }}>
-                      {carbonData ? (
-                        <>
-                          <Typography variant="h4" sx={{ color: '#4CAF50', mb: 2 }}>
-                            {carbonData.total.toLocaleString()} tCO₂e
+              {/* Right Column - Details */}
+              <Grid item xs={12} md={5} lg={4}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: '600px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                  }}
+                >
+                  {selectedState ? (
+                    <>
+                      <Typography variant="h6" sx={{ color: '#FFD180', mb: 2 }}>
+                        {selectedState} Carbon Footprint Details
+                      </Typography>
+                      {carbonData && (
+                        <Box sx={{ mb: 3 }}>
+                          <Typography variant="body1" sx={{ color: '#fff', mb: 1 }}>
+                            Total Emissions: {carbonData.total.toLocaleString()} tCO₂e
                           </Typography>
-                          <Typography variant="body1" sx={{ color: '#FFB74D', mb: 1 }}>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                             Industrial: {carbonData.industrial.toLocaleString()} tCO₂e
                           </Typography>
-                          <Typography variant="body1" sx={{ color: '#FFB74D', mb: 1 }}>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                             Residential: {carbonData.residential.toLocaleString()} tCO₂e
                           </Typography>
-                          <Typography variant="body1" sx={{ color: '#FFB74D', mb: 1 }}>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)' }}>
                             Transport: {carbonData.transport.toLocaleString()} tCO₂e
                           </Typography>
-
-                          {isPredicting ? (
-                            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-                              <CircularProgress size={24} />
-                            </Box>
-                          ) : (
-                            renderPredictions()
-                          )}
-                        </>
-                      ) : (
-                        <Typography variant="body1" sx={{ color: '#FFB74D' }}>
-                          Select a state to view carbon footprint details
-                        </Typography>
+                        </Box>
                       )}
-                    </Box>
-                  </Paper>
-                </Grid>
-
-                {/* Historical Data */}
-                <Grid item xs={12}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      background: 'rgba(26, 26, 26, 0.95)',
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: '10px',
-                      border: '1px solid rgba(255, 183, 77, 0.2)',
-                      height: '100%',
-                    }}
-                  >
-                    <Typography variant="h6" sx={{ color: '#FFD180', mb: 2 }}>
-                      Historical Data
+                      {isPredicting ? (
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+                          <CircularProgress />
+                        </Box>
+                      ) : (
+                        renderPredictions()
+                      )}
+                    </>
+                  ) : (
+                    <Typography sx={{ color: '#fff' }}>
+                      Select a state to view its carbon footprint details
                     </Typography>
-                    <HistoricalData data={carbonData} />
-                  </Paper>
-                </Grid>
+                  )}
+                </Paper>
+              </Grid>
+
+              {/* Shegaon Map Section */}
+              <Grid item xs={12}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                  }}
+                >
+                  <Typography variant="h6" sx={{ color: '#FFD180', mb: 2 }}>
+                    Shegaon Campus Map
+                  </Typography>
+                  <ShegaonMap />
+                </Paper>
               </Grid>
             </Grid>
           </Grid>
