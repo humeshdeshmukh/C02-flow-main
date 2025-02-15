@@ -158,7 +158,7 @@ const AIClassification = ({ data, onNext, onBack }) => {
   };
 
   const renderScopeSection = (scope, scopeData) => {
-    const entries = Object.entries(scopeData);
+    const entries = Object.entries(scopeData || {}).filter(([_, data]) => data !== null);
     if (entries.length === 0) return null;
 
     return (
@@ -170,46 +170,44 @@ const AIClassification = ({ data, onNext, onBack }) => {
             </Typography>
             <List>
               {entries.map(([key, data]) => (
-                <ListItem key={key}>
-                  <ListItemText
-                    primary={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                    secondary={
-                      <Box component="div">
-                        <Box component="span" sx={{ display: 'block' }}>
-                          Value: {data.value.toFixed(2)}
-                        </Box>
-                        {data.details.recommendations.map((rec, idx) => (
-                          <Box
-                            key={idx}
-                            component="span"
-                            sx={{ display: 'block', mt: 1 }}
-                          >
-                            • {rec}
+                data && (
+                  <ListItem key={key}>
+                    <ListItemText
+                      primary={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                      secondary={
+                        <Box component="div">
+                          <Box component="span" sx={{ display: 'block' }}>
+                            Value: {data.value ? data.value.toFixed(2) : 'N/A'}
                           </Box>
-                        ))}
-                      </Box>
-                    }
-                  />
-                  <Box sx={{ ml: 2, textAlign: 'right' }}>
-                    <Chip
-                      label={`${(data.confidence * 100).toFixed(0)}%`}
-                      color={getConfidenceColor(data.confidence)}
-                      size="small"
-                      sx={{ mb: 1 }}
+                          {data.details?.recommendations?.map((rec, idx) => (
+                            <Box
+                              key={idx}
+                              component="span"
+                              sx={{ display: 'block', mt: 1 }}
+                            >
+                              • {rec}
+                            </Box>
+                          ))}
+                        </Box>
+                      }
                     />
-                    <Tooltip title="Classification confidence">
-                      <IconButton size="small">
-                        {data.confidence >= 0.9 ? (
-                          <CheckCircleIcon color="success" />
-                        ) : data.confidence >= 0.7 ? (
-                          <InfoIcon color="warning" />
-                        ) : (
-                          <WarningIcon color="error" />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </ListItem>
+                    <Box sx={{ ml: 2, textAlign: 'right' }}>
+                      {data.confidence && (
+                        <Chip
+                          label={`${(data.confidence * 100).toFixed(0)}%`}
+                          color={getConfidenceColor(data.confidence)}
+                          size="small"
+                          sx={{ mb: 1 }}
+                        />
+                      )}
+                      <Tooltip title="Classification confidence">
+                        <IconButton size="small">
+                          <InfoIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </ListItem>
+                )
               ))}
             </List>
           </CardContent>
