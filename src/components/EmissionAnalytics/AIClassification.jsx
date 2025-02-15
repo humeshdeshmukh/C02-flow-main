@@ -37,60 +37,95 @@ const AIClassification = ({ data, onNext, onBack }) => {
         setError(null);
 
         const classified = {
-          scope1: {},
-          scope2: {},
-          scope3: {},
+          scope1: {
+            fuelConsumption: null,
+            electricityUsage: null,
+            businessTravel: null
+          },
+          scope2: {
+            fuelConsumption: null,
+            electricityUsage: null,
+            businessTravel: null
+          },
+          scope3: {
+            fuelConsumption: null,
+            electricityUsage: null,
+            businessTravel: null
+          },
           factors: [],
           totalConfidence: 0,
           classificationCount: 0,
         };
 
         // Classify fuel consumption
-        if (data.fuelConsumption) {
-          const fuelResult = classifyEmission({
-            type: 'fuel_consumption',
-            value: data.fuelConsumption,
-            factors: { fuel_type: 'petrol' },
-          });
-          classified[fuelResult.scope].fuelConsumption = {
-            value: data.fuelConsumption,
-            ...fuelResult,
-          };
-          classified.totalConfidence += fuelResult.confidence;
-          classified.classificationCount++;
-          classified.factors.push(...fuelResult.details.factors);
+        if (data?.fuelConsumption) {
+          try {
+            const fuelResult = await classifyEmission({
+              type: 'fuel_consumption',
+              value: data.fuelConsumption,
+              fuelType: 'petrol'
+            });
+            if (fuelResult && fuelResult.scope) {
+              classified[fuelResult.scope].fuelConsumption = {
+                value: data.fuelConsumption,
+                ...fuelResult
+              };
+              classified.totalConfidence += fuelResult.confidence || 0;
+              classified.classificationCount++;
+              if (fuelResult.details?.factors) {
+                classified.factors.push(...fuelResult.details.factors);
+              }
+            }
+          } catch (err) {
+            console.error('Error classifying fuel consumption:', err);
+          }
         }
 
         // Classify electricity usage
-        if (data.electricityUsage) {
-          const electricityResult = classifyEmission({
-            type: 'electricity_usage',
-            value: data.electricityUsage,
-            factors: { energy_source: 'grid' },
-          });
-          classified[electricityResult.scope].electricityUsage = {
-            value: data.electricityUsage,
-            ...electricityResult,
-          };
-          classified.totalConfidence += electricityResult.confidence;
-          classified.classificationCount++;
-          classified.factors.push(...electricityResult.details.factors);
+        if (data?.electricityUsage) {
+          try {
+            const electricityResult = await classifyEmission({
+              type: 'electricity',
+              value: data.electricityUsage
+            });
+            if (electricityResult && electricityResult.scope) {
+              classified[electricityResult.scope].electricityUsage = {
+                value: data.electricityUsage,
+                ...electricityResult
+              };
+              classified.totalConfidence += electricityResult.confidence || 0;
+              classified.classificationCount++;
+              if (electricityResult.details?.factors) {
+                classified.factors.push(...electricityResult.details.factors);
+              }
+            }
+          } catch (err) {
+            console.error('Error classifying electricity usage:', err);
+          }
         }
 
         // Classify business travel
-        if (data.businessTravel) {
-          const travelResult = classifyEmission({
-            type: 'business_travel',
-            value: data.businessTravel,
-            factors: { transport_mode: 'car' },
-          });
-          classified[travelResult.scope].businessTravel = {
-            value: data.businessTravel,
-            ...travelResult,
-          };
-          classified.totalConfidence += travelResult.confidence;
-          classified.classificationCount++;
-          classified.factors.push(...travelResult.details.factors);
+        if (data?.businessTravel) {
+          try {
+            const travelResult = await classifyEmission({
+              type: 'business_travel',
+              value: data.businessTravel,
+              mode: 'car'
+            });
+            if (travelResult && travelResult.scope) {
+              classified[travelResult.scope].businessTravel = {
+                value: data.businessTravel,
+                ...travelResult
+              };
+              classified.totalConfidence += travelResult.confidence || 0;
+              classified.classificationCount++;
+              if (travelResult.details?.factors) {
+                classified.factors.push(...travelResult.details.factors);
+              }
+            }
+          } catch (err) {
+            console.error('Error classifying business travel:', err);
+          }
         }
 
         // Calculate average confidence
@@ -139,19 +174,18 @@ const AIClassification = ({ data, onNext, onBack }) => {
                   <ListItemText
                     primary={key.replace(/([A-Z])/g, ' $1').toLowerCase()}
                     secondary={
-                      <Box>
-                        <Typography variant="body2" color="textSecondary">
+                      <Box component="div">
+                        <Box component="span" sx={{ display: 'block' }}>
                           Value: {data.value.toFixed(2)}
-                        </Typography>
+                        </Box>
                         {data.details.recommendations.map((rec, idx) => (
-                          <Typography
+                          <Box
                             key={idx}
-                            variant="body2"
-                            color="textSecondary"
-                            sx={{ mt: 1 }}
+                            component="span"
+                            sx={{ display: 'block', mt: 1 }}
                           >
                             • {rec}
-                          </Typography>
+                          </Box>
                         ))}
                       </Box>
                     }

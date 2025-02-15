@@ -91,22 +91,27 @@ const EmissionCalculation = ({ data, onBack }) => {
   // Memoize emission calculations
   const calculateEmissions = useMemo(() => {
     try {
+      if (!data || !data.scope1 || !data.scope2 || !data.scope3) {
+        console.warn('Missing scope data:', { data });
+        return null;
+      }
+
       const calculated = {
         scope1: {
           fuelConsumption: {
-            value: data.scope1.fuelConsumption.value * EMISSION_FACTORS.FUEL,
+            value: (data.scope1.fuelConsumption?.value || 0) * EMISSION_FACTORS.FUEL,
             unit: 'kg CO2e',
           },
         },
         scope2: {
           electricityUsage: {
-            value: data.scope2.electricityUsage.value * EMISSION_FACTORS.ELECTRICITY,
+            value: (data.scope2.electricityUsage?.value || 0) * EMISSION_FACTORS.ELECTRICITY,
             unit: 'kg CO2e',
           },
         },
         scope3: {
           businessTravel: {
-            value: data.scope3.businessTravel.value * EMISSION_FACTORS.TRAVEL,
+            value: (data.scope3.businessTravel?.value || 0) * EMISSION_FACTORS.TRAVEL,
             unit: 'kg CO2e',
           },
         },
@@ -439,9 +444,9 @@ const EmissionCalculation = ({ data, onBack }) => {
                     <ListItemText
                       primary={req.requirement}
                       secondary={
-                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                        <Box component="span" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                           Status: {req.status}
-                        </Typography>
+                        </Box>
                       }
                     />
                     <Chip
