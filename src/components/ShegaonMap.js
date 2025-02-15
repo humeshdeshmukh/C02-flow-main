@@ -19,7 +19,14 @@ const ShegaonMap = () => {
     <MapContainer 
       center={collegePosition} 
       zoom={15} 
-      style={{ height: '500px', width: '100%', borderRadius: '12px' }}
+      style={{ height: '300px', width: '90%', borderRadius: '12px', margin: '0 auto' }}
+      zoomControl={false}  // Remove zoom controls
+      dragging={false}     // Disable dragging
+      touchZoom={false}    // Disable touch zoom
+      scrollWheelZoom={false} // Disable scroll wheel zoom
+      doubleClickZoom={false} // Disable double click zoom
+      boxZoom={false}      // Disable box zoom
+      keyboard={false}     // Disable keyboard navigation
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
