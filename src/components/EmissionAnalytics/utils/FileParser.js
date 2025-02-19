@@ -1,10 +1,10 @@
 import * as pdfjs from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
+import 'pdfjs-dist/build/pdf.worker.min';
 import Tesseract from 'tesseract.js';
 import * as XLSX from 'xlsx';
 
 // Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 export const parseFile = async (file) => {
   const fileType = file.type;
