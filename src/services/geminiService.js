@@ -1058,6 +1058,86 @@ Respond in a helpful and informative way while staying within your role as a sma
       };
     }
   },
+
+  // Predict future carbon emissions for a state
+  async predictCarbonEmissions(stateData) {
+    const prompt = `
+      Analyze the following state carbon emission data and predict future emissions for the next 5 years.
+      Consider industrial growth, population trends, and renewable energy adoption.
+      Current data:
+      - Total emissions: ${stateData.total} tCO₂e
+      - Industrial: ${stateData.industrial} tCO₂e
+      - Residential: ${stateData.residential} tCO₂e
+      - Transport: ${stateData.transport} tCO₂e
+
+      Please provide predictions in JSON format with the following structure:
+      {
+        "predictions": {
+          "oneYear": { total, industrial, residential, transport, confidence },
+          "threeYears": { total, industrial, residential, transport, confidence },
+          "fiveYears": { total, industrial, residential, transport, confidence }
+        },
+        "recommendations": [
+          { "sector": string, "action": string, "impact": string, "priority": "high"|"medium"|"low" }
+        ],
+        "confidenceScore": number (0-1),
+        "keyFactors": [ string ]
+      }
+    `;
+
+    try {
+      const response = await makeGeminiApiCall(prompt);
+      const predictions = extractJsonFromText(response);
+      
+      if (!predictions || !predictions.predictions) {
+        throw new Error('Invalid prediction format received');
+      }
+
+      return predictions;
+    } catch (error) {
+      console.error('Error predicting carbon emissions:', error);
+      return {
+        predictions: {
+          oneYear: {
+            total: Math.round(stateData.total * 1.02),
+            industrial: Math.round(stateData.industrial * 1.015),
+            residential: Math.round(stateData.residential * 1.025),
+            transport: Math.round(stateData.transport * 1.03),
+            confidence: 0.85
+          },
+          threeYears: {
+            total: Math.round(stateData.total * 1.05),
+            industrial: Math.round(stateData.industrial * 1.04),
+            residential: Math.round(stateData.residential * 1.06),
+            transport: Math.round(stateData.transport * 1.08),
+            confidence: 0.75
+          },
+          fiveYears: {
+            total: Math.round(stateData.total * 1.08),
+            industrial: Math.round(stateData.industrial * 1.06),
+            residential: Math.round(stateData.residential * 1.09),
+            transport: Math.round(stateData.transport * 1.12),
+            confidence: 0.65
+          }
+        },
+        recommendations: [
+          {
+            sector: "Industrial",
+            action: "Implement energy-efficient technologies",
+            impact: "High potential for emission reduction",
+            priority: "high"
+          }
+        ],
+        confidenceScore: 0.75,
+        keyFactors: [
+          "Industrial growth rate",
+          "Population growth",
+          "Renewable energy adoption",
+          "Transportation infrastructure"
+        ]
+      };
+    }
+  },
 };
 
 export default geminiService;

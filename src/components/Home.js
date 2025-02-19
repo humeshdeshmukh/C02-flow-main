@@ -102,7 +102,7 @@ const Home = () => {
                         mb: 4,
                       }}
                     >
-                      Smart Energy Management
+                      
                     </Typography>
                   </motion.div>
                   <motion.div
@@ -120,7 +120,7 @@ const Home = () => {
                         lineHeight: 1.6,
                       }}
                     >
-                    "Smart Energy Management: Paving the Way to Carbon Neutrality."
+                    "Paving the Way to Carbon Neutrality."
 
 
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -8,9 +8,6 @@ import {
   CircularProgress,
   Tabs,
   Tab,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   List,
   ListItem,
   ListItemIcon,
@@ -25,14 +22,10 @@ import {
   Alert
 } from '@mui/material';
 import {
-  ExpandMore as ExpandMoreIcon,
-  TrendingUp,
-  EmojiObjects,
   Timeline,
+  EmojiObjects,
   SaveAlt,
   Nature,
-  AttachMoney,
-  Speed,
   Assessment,
   LocalShipping,
   Gavel,
@@ -49,48 +42,34 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
 } from 'recharts';
 import {
-  getEmissionInsights,
-  generateReductionStrategies,
-  predictFutureEmissions,
   generateSustainabilityReport,
   analyzeSupplyChain,
   generateComplianceReport,
 } from '../../services/aiService';
 import { generateComprehensiveReport } from './ReportGenerator';
 
+// Constants for emission factors
+const EMISSION_FACTORS = {
+  FUEL: 2.68,
+  ELECTRICITY: 0.4,
+  TRAVEL: 0.14
+};
+
 const EmissionCalculation = ({ data, onBack }) => {
   const [calculatedData, setCalculatedData] = useState(null);
   const [isProcessing, setIsProcessing] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
-  const [aiInsights, setAiInsights] = useState(null);
-  const [reductionStrategies, setReductionStrategies] = useState(null);
-  const [predictions, setPredictions] = useState(null);
   const [sustainabilityReport, setSustainabilityReport] = useState(null);
   const [supplyChainAnalysis, setSupplyChainAnalysis] = useState(null);
   const [complianceReport, setComplianceReport] = useState(null);
   const [loadingStates, setLoadingStates] = useState({
-    insights: false,
-    strategies: false,
-    predictions: false,
     sustainability: false,
     supplyChain: false,
     compliance: false,
   });
   const [errors, setErrors] = useState({
-    insights: null,
-    strategies: null,
-    predictions: null,
     sustainability: null,
     supplyChain: null,
     compliance: null,
@@ -109,99 +88,71 @@ const EmissionCalculation = ({ data, onBack }) => {
     }));
   };
 
-  useEffect(() => {
-    const calculateEmissions = () => {
-      try {
-        const calculated = {
-          scope1: {
-            fuelConsumption: {
-              value: data.scope1.fuelConsumption.value * 2.68,
-              unit: 'kg CO2e',
-            },
-          },
-          scope2: {
-            electricityUsage: {
-              value: data.scope2.electricityUsage.value * 0.4,
-              unit: 'kg CO2e',
-            },
-          },
-          scope3: {
-            businessTravel: {
-              value: data.scope3.businessTravel.value * 0.14,
-              unit: 'kg CO2e',
-            },
-          },
-        };
-
-        const chartData = [
-          {
-            name: 'Scope 1',
-            emissions: calculated.scope1.fuelConsumption.value,
-          },
-          {
-            name: 'Scope 2',
-            emissions: calculated.scope2.electricityUsage.value,
-          },
-          {
-            name: 'Scope 3',
-            emissions: calculated.scope3.businessTravel.value,
-          },
-        ];
-
-        setCalculatedData({ calculated, chartData });
-        setIsProcessing(false);
-      } catch (error) {
-        handleError('insights', error);
+  // Memoize emission calculations
+  const calculateEmissions = useMemo(() => {
+    try {
+      if (!data || !data.scope1 || !data.scope2 || !data.scope3) {
+        console.warn('Missing scope data:', { data });
+        return null;
       }
-    };
 
-    calculateEmissions();
+      const calculated = {
+        scope1: {
+          fuelConsumption: {
+            value: (data.scope1.fuelConsumption?.value || 0) * EMISSION_FACTORS.FUEL,
+            unit: 'kg CO2e',
+          },
+        },
+        scope2: {
+          electricityUsage: {
+            value: (data.scope2.electricityUsage?.value || 0) * EMISSION_FACTORS.ELECTRICITY,
+            unit: 'kg CO2e',
+          },
+        },
+        scope3: {
+          businessTravel: {
+            value: (data.scope3.businessTravel?.value || 0) * EMISSION_FACTORS.TRAVEL,
+            unit: 'kg CO2e',
+          },
+        },
+      };
+
+      const chartData = [
+        {
+          name: 'Scope 1',
+          emissions: calculated.scope1.fuelConsumption.value,
+        },
+        {
+          name: 'Scope 2',
+          emissions: calculated.scope2.electricityUsage.value,
+        },
+        {
+          name: 'Scope 3',
+          emissions: calculated.scope3.businessTravel.value,
+        },
+      ];
+
+      return { calculated, chartData };
+    } catch (error) {
+      console.error('Calculation error:', error);
+      return null;
+    }
   }, [data]);
 
-  const fetchInsights = async () => {
-    if (!calculatedData) return;
-    
-    setLoadingStates(prev => ({ ...prev, insights: true }));
-    try {
-      const insights = await getEmissionInsights(calculatedData.calculated);
-      setAiInsights(insights);
-      setErrors(prev => ({ ...prev, insights: null }));
-    } catch (error) {
-      handleError('insights', error);
-    } finally {
-      setLoadingStates(prev => ({ ...prev, insights: false }));
+  useEffect(() => {
+    if (calculateEmissions) {
+      setCalculatedData(calculateEmissions);
+      setIsProcessing(false);
     }
-  };
+  }, [calculateEmissions]);
 
-  const fetchReductionStrategies = async () => {
-    if (!calculatedData) return;
-    
-    setLoadingStates(prev => ({ ...prev, strategies: true }));
-    try {
-      const strategies = await generateReductionStrategies(calculatedData.calculated);
-      setReductionStrategies(strategies);
-      setErrors(prev => ({ ...prev, strategies: null }));
-    } catch (error) {
-      handleError('strategies', error);
-    } finally {
-      setLoadingStates(prev => ({ ...prev, strategies: false }));
+  useEffect(() => {
+    if (calculatedData) {
+      fetchSustainabilityReport();
+      fetchSupplyChainAnalysis();
+      fetchComplianceReport();
     }
-  };
-
-  const fetchPredictions = async () => {
-    if (!calculatedData) return;
-    
-    setLoadingStates(prev => ({ ...prev, predictions: true }));
-    try {
-      const predictions = await predictFutureEmissions(calculatedData.calculated);
-      setPredictions(predictions);
-      setErrors(prev => ({ ...prev, predictions: null }));
-    } catch (error) {
-      handleError('predictions', error);
-    } finally {
-      setLoadingStates(prev => ({ ...prev, predictions: false }));
-    }
-  };
+  }, [calculatedData]);
 
   const fetchSustainabilityReport = async () => {
     if (!calculatedData) return;
@@ -209,9 +160,7 @@ const EmissionCalculation = ({ data, onBack }) => {
     setLoadingStates(prev => ({ ...prev, sustainability: true }));
     try {
       const report = await generateSustainabilityReport({
-        emissions: calculatedData.calculated,
-        predictions: predictions,
-        strategies: reductionStrategies,
+        emissions: calculatedData.calculated
       });
       setSustainabilityReport(report);
       setErrors(prev => ({ ...prev, sustainability: null }));
@@ -252,27 +201,6 @@ const EmissionCalculation = ({ data, onBack }) => {
     }
   };
 
-  useEffect(() => {
-    if (calculatedData) {
-      fetchInsights();
-      fetchReductionStrategies();
-      fetchPredictions();
-      fetchSustainabilityReport();
-      fetchSupplyChainAnalysis();
-      fetchComplianceReport();
-    }
-  }, [calculatedData]);
-
-  const renderError = (section) => {
-    if (!errors[section]) return null;
-    
-    return (
-      <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
-        {errors[section]}
-      </Alert>
-    );
-  };
-
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
@@ -282,9 +210,6 @@ const EmissionCalculation = ({ data, onBack }) => {
     try {
       const reportData = {
         calculatedData,
-        aiInsights,
-        reductionStrategies,
-        predictions,
         sustainabilityReport,
         supplyChainAnalysis,
         complianceReport,
@@ -294,7 +219,6 @@ const EmissionCalculation = ({ data, onBack }) => {
       doc.save('CO2Flow-Comprehensive-Report.pdf');
     } catch (error) {
       console.error('Error generating report:', error);
-      // enqueueSnackbar('Error generating report. Please try again.', { variant: 'error' });
     } finally {
       setReportLoading(false);
     }
@@ -359,224 +283,13 @@ const EmissionCalculation = ({ data, onBack }) => {
     </Grid>
   );
 
-  const renderAIInsights = () => (
-    <Box>
-      {renderError('insights')}
-      {loadingStates.insights ? (
-        <CircularProgress />
-      ) : aiInsights ? (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              }}
-            >
-              <Typography variant="h6" sx={{ color: '#FFB74D', mb: 2 }}>
-                Key Insights
-              </Typography>
-              {aiInsights && (
-                <List>
-                  {aiInsights.trends.map((trend, index) => (
-                    <ListItem key={index}>
-                      <ListItemIcon>
-                        <TrendingUp sx={{ color: '#FFB74D' }} />
-                      </ListItemIcon>
-                      <ListItemText primary={trend} />
-                    </ListItem>
-                  ))}
-                </List>
-              )}
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              }}
-            >
-              <Typography variant="h6" sx={{ color: '#FFB74D', mb: 2 }}>
-                Industry Comparison
-              </Typography>
-              {aiInsights && (
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={aiInsights.industryComparison}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="category" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="yourEmissions" name="Your Emissions" fill="#FFB74D" />
-                    <Bar dataKey="industryAverage" name="Industry Average" fill="#90CAF9" />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </Paper>
-          </Grid>
-        </Grid>
-      ) : null}
-    </Box>
-  );
-
-  const renderReductionStrategies = () => (
-    <Box>
-      {renderError('strategies')}
-      {loadingStates.strategies ? (
-        <CircularProgress />
-      ) : reductionStrategies ? (
-        <Grid container spacing={3}>
-          {Object.entries(reductionStrategies).map(([timeframe, data]) => (
-            <Grid item xs={12} key={timeframe}>
-              <Accordion
-                sx={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  color: 'white',
-                }}
-              >
-                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                  <Typography variant="h6" sx={{ color: '#FFB74D' }}>
-                    {timeframe.charAt(0).toUpperCase() + timeframe.slice(1)} Term Strategies
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <List>
-                    {data.strategies.map((strategy, index) => (
-                      <ListItem key={index}>
-                        <ListItemIcon>
-                          <Nature sx={{ color: '#FFB74D' }} />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={strategy.action}
-                          secondary={
-                            <React.Fragment>
-                              <Typography component="span" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                                Estimated ROI: {strategy.roi}
-                              </Typography>
-                              <br />
-                              <Chip
-                                icon={<Speed />}
-                                label={`Complexity: ${strategy.complexity}`}
-                                size="small"
-                                sx={{ mr: 1, mt: 1 }}
-                              />
-                              <Chip
-                                icon={<AttachMoney />}
-                                label={`Cost: ${strategy.cost}`}
-                                size="small"
-                                sx={{ mt: 1 }}
-                              />
-                            </React.Fragment>
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </AccordionDetails>
-              </Accordion>
-            </Grid>
-          ))}
-        </Grid>
-      ) : null}
-    </Box>
-  );
-
-  const renderPredictions = () => (
-    <Box>
-      {renderError('predictions')}
-      {loadingStates.predictions ? (
-        <CircularProgress />
-      ) : predictions ? (
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              }}
-            >
-              <Typography variant="h6" sx={{ color: '#FFB74D', mb: 2 }}>
-                Emission Forecasts
-              </Typography>
-              <ResponsiveContainer width="100%" height={400}>
-                <AreaChart data={predictions.forecast}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Area
-                    type="monotone"
-                    dataKey="predicted"
-                    name="Predicted Emissions"
-                    stroke="#FFB74D"
-                    fill="#FFB74D"
-                    fillOpacity={0.3}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="upperBound"
-                    name="Upper Bound"
-                    stroke="#FFD180"
-                    fill="#FFD180"
-                    fillOpacity={0.1}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="lowerBound"
-                    name="Lower Bound"
-                    stroke="#FFD180"
-                    fill="#FFD180"
-                    fillOpacity={0.1}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </Paper>
-          </Grid>
-
-          <Grid item xs={12}>
-            <Paper
-              elevation={3}
-              sx={{
-                p: 3,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              }}
-            >
-              <Typography variant="h6" sx={{ color: '#FFB74D', mb: 2 }}>
-                Key Factors Influencing Predictions
-              </Typography>
-              <List>
-                {predictions.factors.map((factor, index) => (
-                  <ListItem key={index}>
-                    <ListItemIcon>
-                      <EmojiObjects sx={{ color: '#FFB74D' }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={factor.name}
-                      secondary={
-                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                          Impact: {factor.impact}
-                        </Typography>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </Paper>
-          </Grid>
-        </Grid>
-      ) : null}
-    </Box>
-  );
-
   const renderSustainabilityReport = () => (
     <Box>
-      {renderError('sustainability')}
+      {errors.sustainability && (
+        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+          {errors.sustainability}
+        </Alert>
+      )}
       {loadingStates.sustainability ? (
         <CircularProgress />
       ) : sustainabilityReport ? (
@@ -617,18 +330,18 @@ const EmissionCalculation = ({ data, onBack }) => {
                 Risk Assessment
               </Typography>
               <ResponsiveContainer width="100%" height={400}>
-                <RadarChart data={sustainabilityReport.riskAssessment.metrics}>
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="category" />
-                  <PolarRadiusAxis />
-                  <Radar
-                    name="Risk Level"
+                <BarChart data={sustainabilityReport.riskAssessment.metrics}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="category" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar
                     dataKey="value"
-                    stroke="#FFB74D"
+                    name="Risk Level"
                     fill="#FFB74D"
-                    fillOpacity={0.6}
                   />
-                </RadarChart>
+                </BarChart>
               </ResponsiveContainer>
             </Paper>
           </Grid>
@@ -639,7 +352,11 @@ const EmissionCalculation = ({ data, onBack }) => {
 
   const renderSupplyChainAnalysis = () => (
     <Box>
-      {renderError('supplyChain')}
+      {errors.supplyChain && (
+        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+          {errors.supplyChain}
+        </Alert>
+      )}
       {loadingStates.supplyChain ? (
         <CircularProgress />
       ) : supplyChainAnalysis ? (
@@ -698,7 +415,11 @@ const EmissionCalculation = ({ data, onBack }) => {
 
   const renderComplianceReport = () => (
     <Box>
-      {renderError('compliance')}
+      {errors.compliance && (
+        <Alert severity="error" sx={{ mt: 2, mb: 2 }}>
+          {errors.compliance}
+        </Alert>
+      )}
       {loadingStates.compliance ? (
         <CircularProgress />
       ) : complianceReport ? (
@@ -723,9 +444,9 @@ const EmissionCalculation = ({ data, onBack }) => {
                     <ListItemText
                       primary={req.requirement}
                       secondary={
-                        <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                        <Box component="span" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
                           Status: {req.status}
-                        </Typography>
+                        </Box>
                       }
                     />
                     <Chip
@@ -759,9 +480,6 @@ const EmissionCalculation = ({ data, onBack }) => {
           scrollButtons="auto"
         >
           <Tab icon={<Timeline />} label="Current Emissions" />
-          <Tab icon={<TrendingUp />} label="AI Insights" />
-          <Tab icon={<EmojiObjects />} label="Reduction Strategies" />
-          <Tab icon={<Timeline />} label="Predictions" />
           <Tab icon={<Description />} label="Sustainability Report" />
           <Tab icon={<LocalShipping />} label="Supply Chain" />
           <Tab icon={<Gavel />} label="Compliance" />
@@ -769,12 +487,9 @@ const EmissionCalculation = ({ data, onBack }) => {
       </Box>
 
       {activeTab === 0 && renderCurrentEmissions()}
-      {activeTab === 1 && renderAIInsights()}
-      {activeTab === 2 && renderReductionStrategies()}
-      {activeTab === 3 && renderPredictions()}
-      {activeTab === 4 && renderSustainabilityReport()}
-      {activeTab === 5 && renderSupplyChainAnalysis()}
-      {activeTab === 6 && renderComplianceReport()}
+      {activeTab === 1 && renderSustainabilityReport()}
+      {activeTab === 2 && renderSupplyChainAnalysis()}
+      {activeTab === 3 && renderComplianceReport()}
 
       <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
         <Button
